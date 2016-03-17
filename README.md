@@ -7,6 +7,7 @@
 ### Credits (Sort by alphabetical order):
   - lbule
   - nofearnohappy
+  - supersonicninja for updating the patches
   - Syl191 for the patches
   - The CyanogenMod Team
   - xen0n

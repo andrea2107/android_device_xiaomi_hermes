@@ -1,45 +1,7 @@
-From 002931f5b755b405c289168b69e7720bcedc2d19 Mon Sep 17 00:00:00 2001
-From: jianminglok <jianminglok@hotmail.com>
-Date: Thu, 17 Mar 2016 12:16:56 +0800
-Subject: [PATCH] Update
-
----
- README.md                    |   3 +
- healthd/BatteryMonitor.cpp   |   4 +
- include/cutils/alelog.h      |  59 +++++++
- include/cutils/xlog.h        | 178 +++++++++++++++++++
- include/log/log.h            |   9 -
- init/Android.mk              |   5 +
- init/init.c                  |  11 +-
- init/vendor_init.c           |   7 -
- init/vendor_init.h           |   1 -
- liblog/Android.mk            |   2 -
- liblog/tests/liblog_test.cpp | 395 -------------------------------------------
- libziparchive/zip_archive.cc |  22 +--
- mkbootimg/bootimg.h          |   2 +
- mkbootimg/mkbootimg.c        |  54 +++++-
- mkbootimg/unpackbootimg.c    |  47 +++--
- rootdir/init.trace.rc        |  19 ++-
- rootdir/ueventd.rc           | 206 +++++++++++++++++-----
- 17 files changed, 521 insertions(+), 503 deletions(-)
- create mode 100644 README.md
- create mode 100644 include/cutils/alelog.h
- create mode 100644 include/cutils/xlog.h
-
-diff --git a/README.md b/README.md
-new file mode 100644
-index 0000000..928a394
---- /dev/null
-+++ b/README.md
-@@ -0,0 +1,3 @@
-+# android_system_core_mtk
-+
-+FIX BOOT
-diff --git a/healthd/BatteryMonitor.cpp b/healthd/BatteryMonitor.cpp
-index 66c4e8e..ba12358 100644
---- a/healthd/BatteryMonitor.cpp
-+++ b/healthd/BatteryMonitor.cpp
-@@ -198,7 +198,11 @@ bool BatteryMonitor::update(void) {
+diff -ur core/healthd/BatteryMonitor.cpp core_mtk/healthd/BatteryMonitor.cpp
+--- core/healthd/BatteryMonitor.cpp	2016-01-22 15:55:46.497330000 -0800
++++ core_mtk/healthd/BatteryMonitor.cpp	2016-01-23 05:28:26.435234000 -0800
+@@ -198,7 +198,11 @@
      props.batteryLevel = mBatteryFixedCapacity ?
          mBatteryFixedCapacity :
          getIntField(mHealthdConfig->batteryCapacityPath);
@@ -51,287 +13,10 @@ index 66c4e8e..ba12358 100644
  
      props.batteryTemperature = mBatteryFixedTemperature ?
          mBatteryFixedTemperature :
-diff --git a/include/cutils/alelog.h b/include/cutils/alelog.h
-new file mode 100644
-index 0000000..294c7a9
---- /dev/null
-+++ b/include/cutils/alelog.h
-@@ -0,0 +1,59 @@
-+#if !defined(__ALE_H__)
-+#define __ALE_H__
-+
-+#if defined(__cplusplus)
-+extern "C" {
-+#endif
-+
-+#define LOGGER_ALE_MASK         0xf0
-+
-+#define LOGGER_ALE_MSG_RAW      0x00
-+#define LOGGER_ALE_MSG_K        0x10
-+#define LOGGER_ALE_MSG_N        0x20
-+#define LOGGER_ALE_MSG_J        0x30
-+#define LOGGER_ALE_XMSG_K       0x40
-+#define LOGGER_ALE_XMSG_N       0x50
-+#define LOGGER_ALE_XMSG_J       0x60
-+
-+#define LOGGER_ALE_MSG_SIZE     768
-+
-+#define LOGGER_ALE_ARGS_MAX 16
-+struct ale_convert {
-+    const char *tag_str;
-+    const char *fmt_ptr;
-+    const char *file;
-+    int lineno;
-+    unsigned int hash;
-+    char params[LOGGER_ALE_ARGS_MAX];
-+};
-+
-+int ale_log_output_binary(int prio, const char *tag, const void *payload, size_t len);
-+
-+int ale_log_output(int bufid, int prio, const struct ale_convert *convert, ...);
-+
-+#define ale_log_print(bufid, prio, tag, fmt, ...)			\
-+  ({									\
-+      if (__builtin_constant_p(tag) && __builtin_constant_p(fmt)) {     \
-+          static const struct ale_convert ____ale_rec____ =		\
-+	    {								\
-+                __builtin_constant_p(tag) ? tag : NULL,			\
-+                __builtin_constant_p(fmt) ? fmt : NULL,			\
-+                __FILE__,                                               \
-+                __builtin_constant_p(prio) ? prio : 0,                  \
-+                0,                                                      \
-+                "" };                                                   \
-+          ale_log_output(bufid, prio, &____ale_rec____, ##__VA_ARGS__);	\
-+      }                                                                 \
-+      else {                                                            \
-+          struct ale_convert ale =                                      \
-+              {tag, fmt, NULL,                                          \
-+               0, 0, ""};                                               \
-+          ale_log_output(bufid, prio, &ale, ##__VA_ARGS__);		\
-+      }                                                                 \
-+  })
-+
-+#if defined(__cplusplus)
-+};
-+#endif
-+
-+#endif
-diff --git a/include/cutils/xlog.h b/include/cutils/xlog.h
-new file mode 100644
-index 0000000..fb54cc3
---- /dev/null
-+++ b/include/cutils/xlog.h
-@@ -0,0 +1,178 @@
-+#if !defined(_XLOG_H)
-+#define _XLOG_H
-+
-+#include <cutils/log.h>
-+#include <cutils/alelog.h>
-+
-+#ifdef __cplusplus
-+extern "C" {
-+#endif
-+
-+int xlogf_java_tag_is_on(const char *name, int level);
-+int xlogf_native_tag_is_on(const char *name, int level);
-+
-+int xlogf_java_xtag_is_on(const char *name, int level);
-+int xlogf_native_xtag_is_on(const char *name, int level);
-+
-+#ifndef XLOG_TAG
-+#define XLOG_TAG NULL
-+#endif
-+
-+#ifndef SXLOGV
-+#define SXLOGV(...) ((void)SXLOG_PRI(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGD
-+#define SXLOGD(...) ((void)SXLOG_PRI(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGI
-+#define SXLOGI(...) ((void)SXLOG_PRI(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGW
-+#define SXLOGW(...) ((void)SXLOG_PRI(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGE
-+#define SXLOGE(...) ((void)SXLOG_PRI(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGF
-+#define SXLOGF(...) ((void)SXLOG_PRI(ANDROID_LOG_FATAL, LOG_TAG, __VA_ARGS__))
-+#endif
-+#if LOG_NDEBUG
-+#define SXLOG_ASSERT(cond, ...)			\
-+    ( (CONDITION(cond))				\
-+      ? ((void)SXLOGF(LOG_TAG, __VA_ARGS__))	\
-+      : (void)0 )
-+#else
-+#define SXLOG_ASSERT(cond, ...) ((void)0)
-+#endif
-+
-+#define SXLOG_ALWAYS_ASSERT(cond,...)                    \
-+  ( (CONDITION(cond))					 \
-+    ? ((void)SXLOGF(LOG_TAG, __VA_ARGS__))		 \
-+      : (void)0 )
-+
-+#ifndef XLOGV
-+#define XLOGV(...) ((void)XLOG_PRI(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGD
-+#define XLOGD(...) ((void)XLOG_PRI(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGI
-+#define XLOGI(...) ((void)XLOG_PRI(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGW
-+#define XLOGW(...) ((void)XLOG_PRI(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGE
-+#define XLOGE(...) ((void)XLOG_PRI(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGF
-+#define XLOGF(...) ((void)XLOG_PRI(ANDROID_LOG_FATAL, LOG_TAG, __VA_ARGS__))
-+#endif
-+
-+#if LOG_NDEBUG
-+#define XLOG_ASSERT(cond, ...)                  \
-+    (!(cond)                                    \
-+     ? ((void)XLOGF(__VA_ARGS__))		\
-+     : (void)0)
-+#else
-+#define XLOG_ASSERT(cond, ...) ((void)0)
-+#endif
-+
-+#define XLOG_ALWAY_ASSERT(cond, ...)                    \
-+    (!(cond)                                            \
-+     ? ((void)XLOGF(__VA_ARGS__))			\
-+     : (void)0)
-+
-+
-+#ifndef SXLOGV2
-+#define SXLOGV2(...) ((void)SXLOG_PRI(ANDROID_LOG_VERBOSE, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGD2
-+#define SXLOGD2(...) ((void)SXLOG_PRI(ANDROID_LOG_DEBUG, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGI2
-+#define SXLOGI2(...) ((void)SXLOG_PRI(ANDROID_LOG_INFO, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGW2
-+#define SXLOGW2(...) ((void)SXLOG_PRI(ANDROID_LOG_WARN, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGE2
-+#define SXLOGE2(...) ((void)SXLOG_PRI(ANDROID_LOG_ERROR, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef SXLOGF2
-+#define SXLOGF2(...) ((void)SXLOG_PRI(ANDROID_LOG_FATAL, XLOG_TAG, __VA_ARGS__))
-+#endif
-+
-+#ifndef XLOGV2
-+#define XLOGV2(...) ((void)XLOG_PRI(ANDROID_LOG_VERBOSE, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGD2
-+#define XLOGD2(...) ((void)XLOG_PRI(ANDROID_LOG_DEBUG, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGI2
-+#define XLOGI2(...) ((void)XLOG_PRI(ANDROID_LOG_INFO, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGW2
-+#define XLOGW2(...) ((void)XLOG_PRI(ANDROID_LOG_WARN, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGE2
-+#define XLOGE2(...) ((void)XLOG_PRI(ANDROID_LOG_ERROR, XLOG_TAG, __VA_ARGS__))
-+#endif
-+#ifndef XLOGF2
-+#define XLOGF2(...) ((void)XLOG_PRI(ANDROID_LOG_FATAL, XLOG_TAG, __VA_ARGS__))
-+#endif
-+
-+struct xlog_record {
-+	const char *tag_str;
-+	const char *fmt_str;
-+	int prio;
-+};
-+
-+#if defined(__cplusplus)
-+extern "C" {
-+#endif
-+
-+int __xlog_buf_printf(int bufid, const struct xlog_record *rec, ...);
-+
-+#if defined(__cplusplus)
-+}
-+#endif
-+
-+#if !defined(HAVE_ALE_FEATURE)
-+
-+#define xlog_buf_printf(bufid, prio, tag, fmt, ...)			\
-+	({								\
-+		static const struct xlog_record _xlog_rec =		\
-+			{tag, fmt, prio};				\
-+		__xlog_buf_printf(bufid, &_xlog_rec, ##__VA_ARGS__);	\
-+	})
-+
-+#else
-+
-+#define xlog_buf_printf(bufid, prio, tag, fmt, ...)			\
-+  ({									\
-+      static const struct ale_convert ____xlog_ale_rec____ =		\
-+          { tag, fmt, __FILE__, prio, 0, "" };				\
-+      ale_log_output(bufid, prio, &____xlog_ale_rec____,		\
-+                     ##__VA_ARGS__);                                    \
-+  })
-+
-+#endif
-+
-+#define XLOG_PRI(priority, tag, ...)                            \
-+    xlog_buf_printf(LOG_ID_MAIN, priority, tag, __VA_ARGS__)
-+
-+#define SXLOG_PRI(priority, tag, ...)                           \
-+    xlog_buf_printf(LOG_ID_MAIN, priority, tag, __VA_ARGS__)
-+
-+#define xlog_printf(priority, tag, ...)                         \
-+    xlog_buf_printf(LOG_ID_MAIN, priority, tag, __VA_ARGS__)
-+
-+#define sxlog_printf(priority, tag, ...)                        \
-+    xlog_buf_printf(LOG_ID_SYSTEM, priority, tag, __VA_ARGS__)
-+
-+#ifdef __cplusplus
-+}
-+#endif
-+
-+#endif
-diff --git a/include/log/log.h b/include/log/log.h
-index e3b7ec1..ace12d6 100644
---- a/include/log/log.h
-+++ b/include/log/log.h
-@@ -534,12 +534,6 @@ typedef enum {
- #define android_btWriteLog(tag, type, payload, len) \
-     __android_log_btwrite(tag, type, payload, len)
- 
--#define android_errorWriteLog(tag, subTag) \
--    __android_log_error_write(tag, subTag, -1, NULL, 0)
--
--#define android_errorWriteWithInfoLog(tag, subTag, uid, data, dataLen) \
--    __android_log_error_write(tag, subTag, uid, data, dataLen)
--
- // TODO: remove these prototypes and their users
- #define android_testLog(prio, tag) (1)
- #define android_writevLog(vec,num) do{}while(0)
-@@ -563,9 +557,6 @@ typedef enum log_id {
- #define sizeof_log_id_t sizeof(typeof_log_id_t)
- #define typeof_log_id_t unsigned char
- 
--int __android_log_error_write(int tag, const char *subTag, int32_t uid, const char *data,
--                              uint32_t dataLen);
--
- /*
-  * Send a simple string to the log.
-  */
-diff --git a/init/Android.mk b/init/Android.mk
-index c6863bf..a66bbc5 100755
---- a/init/Android.mk
-+++ b/init/Android.mk
-@@ -29,6 +29,11 @@ ifneq (,$(filter userdebug eng,$(TARGET_BUILD_VARIANT)))
+diff -ur core/init/Android.mk core_mtk/init/Android.mk
+--- core/init/Android.mk	2016-01-22 15:55:46.501330000 -0800
++++ core_mtk/init/Android.mk	2016-01-23 05:28:26.439234000 -0800
+@@ -29,6 +29,11 @@
  LOCAL_CFLAGS += -DALLOW_LOCAL_PROP_OVERRIDE=1 -DALLOW_DISABLE_SELINUX=1
  endif
  
@@ -343,10 +28,9 @@ index c6863bf..a66bbc5 100755
  # Enable ueventd logging
  #LOCAL_CFLAGS += -DLOG_UEVENTS=1
  
-diff --git a/init/init.c b/init/init.c
-index 1cce8d8..1f11861 100644
---- a/init/init.c
-+++ b/init/init.c
+diff -ur core/init/init.c core_mtk/init/init.c
+--- core/init/init.c	2016-01-22 15:55:46.505330000 -0800
++++ core_mtk/init/init.c	2016-01-23 05:28:26.443234000 -0800
 @@ -57,7 +57,6 @@
  #include "util.h"
  #include "ueventd.h"
@@ -355,7 +39,7 @@ index 1cce8d8..1f11861 100644
  
  struct selabel_handle *sehandle;
  struct selabel_handle *sehandle_prop;
-@@ -515,9 +514,6 @@ static void msg_restart(const char *name)
+@@ -515,9 +514,6 @@
  
  void handle_control_message(const char *msg, const char *arg)
  {
@@ -365,7 +49,7 @@ index 1cce8d8..1f11861 100644
      if (!strcmp(msg,"start")) {
          msg_start(arg);
      } else if (!strcmp(msg,"stop")) {
-@@ -927,6 +923,9 @@ static bool selinux_is_disabled(void)
+@@ -927,6 +923,9 @@
  static bool selinux_is_enforcing(void)
  {
  #ifdef ALLOW_DISABLE_SELINUX
@@ -375,7 +59,7 @@ index 1cce8d8..1f11861 100644
      char tmp[PROP_VALUE_MAX];
  
      if (property_get("ro.boot.selinux", tmp) == 0) {
-@@ -1010,7 +1009,11 @@ static void selinux_initialize(void)
+@@ -1010,7 +1009,11 @@
      }
  
      selinux_init_all_handles();
@@ -387,11 +71,10 @@ index 1cce8d8..1f11861 100644
      INFO("SELinux: security_setenforce(%d)\n", is_enforcing);
      security_setenforce(is_enforcing);
  }
-diff --git a/init/vendor_init.c b/init/vendor_init.c
-index d2964ad..d3fd5ff 100644
---- a/init/vendor_init.c
-+++ b/init/vendor_init.c
-@@ -28,7 +28,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+diff -ur core/init/vendor_init.c core_mtk/init/vendor_init.c
+--- core/init/vendor_init.c	2016-01-22 15:55:46.505330000 -0800
++++ core_mtk/init/vendor_init.c	2016-01-23 05:28:26.443234000 -0800
+@@ -28,7 +28,6 @@
   */
  
  #include "vendor_init.h"
@@ -399,7 +82,7 @@ index d2964ad..d3fd5ff 100644
  
  /* init vendor override stubs */
  
-@@ -36,9 +35,3 @@ __attribute__ ((weak))
+@@ -36,9 +35,3 @@
  void vendor_load_properties()
  {
  }
@@ -409,437 +92,19 @@ index d2964ad..d3fd5ff 100644
 -{
 -    return -ENOSYS;
 -}
-diff --git a/init/vendor_init.h b/init/vendor_init.h
-index efa4eea..9afb449 100644
---- a/init/vendor_init.h
-+++ b/init/vendor_init.h
-@@ -30,5 +30,4 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+diff -ur core/init/vendor_init.h core_mtk/init/vendor_init.h
+--- core/init/vendor_init.h	2016-01-22 15:55:46.505330000 -0800
++++ core_mtk/init/vendor_init.h	2016-01-23 05:28:26.443234000 -0800
+@@ -30,5 +30,4 @@
  #ifndef __INIT_VENDOR__H__
  #define __INIT_VENDOR__H__
  extern void vendor_load_properties(void);
 -extern int vendor_handle_control_message(const char *msg, const char *arg);
  #endif /* __INIT_VENDOR__H__ */
-diff --git a/liblog/Android.mk b/liblog/Android.mk
-index 6b2529c..bbcae54 100644
---- a/liblog/Android.mk
-+++ b/liblog/Android.mk
-@@ -22,8 +22,6 @@ else
- liblog_sources := logd_write_kern.c
- endif
- 
--liblog_sources += log_event_write.c
--
- # some files must not be compiled when building against Mingw
- # they correspond to features not used by our host development tools
- # which are also hard or even impossible to port to native Win32
-diff --git a/liblog/tests/liblog_test.cpp b/liblog/tests/liblog_test.cpp
-index b43a902..393e2cd 100644
---- a/liblog/tests/liblog_test.cpp
-+++ b/liblog/tests/liblog_test.cpp
-@@ -682,398 +682,3 @@ TEST(liblog, filterRule) {
- 
-     android_log_format_free(p_format);
- }
--
--static inline int32_t get4LE(const char* src)
--{
--    return src[0] | (src[1] << 8) | (src[2] << 16) | (src[3] << 24);
--}
--
--TEST(liblog, android_errorWriteWithInfoLog__android_logger_list_read__typical) {
--    const int TAG = 123456781;
--    const char SUBTAG[] = "test-subtag";
--    const int UID = -1;
--    const int DATA_LEN = 200;
--    struct logger_list *logger_list;
--
--    pid_t pid = getpid();
--
--    ASSERT_TRUE(NULL != (logger_list = android_logger_list_open(
--        LOG_ID_EVENTS,  O_RDONLY | O_NDELAY, 1000, pid)));
--
--    ASSERT_LT(0, android_errorWriteWithInfoLog(
--            TAG, SUBTAG, UID, max_payload_buf, DATA_LEN));
--
--    sleep(2);
--
--    int count = 0;
--
--    for (;;) {
--        log_msg log_msg;
--        if (android_logger_list_read(logger_list, &log_msg) <= 0) {
--            break;
--        }
--
--        char *eventData = log_msg.msg();
--
--        // Tag
--        int tag = get4LE(eventData);
--        eventData += 4;
--
--        if (tag != TAG) {
--            continue;
--        }
--
--        // List type
--        ASSERT_EQ(EVENT_TYPE_LIST, eventData[0]);
--        eventData++;
--
--        // Number of elements in list
--        ASSERT_EQ(3, eventData[0]);
--        eventData++;
--
--        // Element #1: string type for subtag
--        ASSERT_EQ(EVENT_TYPE_STRING, eventData[0]);
--        eventData++;
--
--        ASSERT_EQ((int) strlen(SUBTAG), get4LE(eventData));
--        eventData +=4;
--
--        if (memcmp(SUBTAG, eventData, strlen(SUBTAG))) {
--            continue;
--        }
--        eventData += strlen(SUBTAG);
--
--        // Element #2: int type for uid
--        ASSERT_EQ(EVENT_TYPE_INT, eventData[0]);
--        eventData++;
--
--        ASSERT_EQ(UID, get4LE(eventData));
--        eventData += 4;
--
--        // Element #3: string type for data
--        ASSERT_EQ(EVENT_TYPE_STRING, eventData[0]);
--        eventData++;
--
--        ASSERT_EQ(DATA_LEN, get4LE(eventData));
--        eventData += 4;
--
--        if (memcmp(max_payload_buf, eventData, DATA_LEN)) {
--            continue;
--        }
--
--        ++count;
--    }
--
--    EXPECT_EQ(1, count);
--
--    android_logger_list_close(logger_list);
--}
--
--TEST(liblog, android_errorWriteWithInfoLog__android_logger_list_read__data_too_large) {
--    const int TAG = 123456782;
--    const char SUBTAG[] = "test-subtag";
--    const int UID = -1;
--    const int DATA_LEN = sizeof(max_payload_buf);
--    struct logger_list *logger_list;
--
--    pid_t pid = getpid();
--
--    ASSERT_TRUE(NULL != (logger_list = android_logger_list_open(
--        LOG_ID_EVENTS,  O_RDONLY | O_NDELAY, 1000, pid)));
--
--    ASSERT_LT(0, android_errorWriteWithInfoLog(
--            TAG, SUBTAG, UID, max_payload_buf, DATA_LEN));
--
--    sleep(2);
--
--    int count = 0;
--
--    for (;;) {
--        log_msg log_msg;
--        if (android_logger_list_read(logger_list, &log_msg) <= 0) {
--            break;
--        }
--
--        char *eventData = log_msg.msg();
--        char *original = eventData;
--
--        // Tag
--        int tag = get4LE(eventData);
--        eventData += 4;
--
--        if (tag != TAG) {
--            continue;
--        }
--
--        // List type
--        ASSERT_EQ(EVENT_TYPE_LIST, eventData[0]);
--        eventData++;
--
--        // Number of elements in list
--        ASSERT_EQ(3, eventData[0]);
--        eventData++;
--
--        // Element #1: string type for subtag
--        ASSERT_EQ(EVENT_TYPE_STRING, eventData[0]);
--        eventData++;
--
--        ASSERT_EQ((int) strlen(SUBTAG), get4LE(eventData));
--        eventData +=4;
--
--        if (memcmp(SUBTAG, eventData, strlen(SUBTAG))) {
--            continue;
--        }
--        eventData += strlen(SUBTAG);
--
--        // Element #2: int type for uid
--        ASSERT_EQ(EVENT_TYPE_INT, eventData[0]);
--        eventData++;
--
--        ASSERT_EQ(UID, get4LE(eventData));
--        eventData += 4;
--
--        // Element #3: string type for data
--        ASSERT_EQ(EVENT_TYPE_STRING, eventData[0]);
--        eventData++;
--
--        size_t dataLen = get4LE(eventData);
--        eventData += 4;
--
--        if (memcmp(max_payload_buf, eventData, dataLen)) {
--            continue;
--        }
--        eventData += dataLen;
--
--        // 4 bytes for the tag, and 512 bytes for the log since the max_payload_buf should be
--        // truncated.
--        ASSERT_EQ(4 + 512, eventData - original);
--
--        ++count;
--    }
--
--    EXPECT_EQ(1, count);
--
--    android_logger_list_close(logger_list);
--}
--
--TEST(liblog, android_errorWriteWithInfoLog__android_logger_list_read__null_data) {
--    const int TAG = 123456783;
--    const char SUBTAG[] = "test-subtag";
--    const int UID = -1;
--    const int DATA_LEN = 200;
--    struct logger_list *logger_list;
--
--    pid_t pid = getpid();
--
--    ASSERT_TRUE(NULL != (logger_list = android_logger_list_open(
--        LOG_ID_EVENTS,  O_RDONLY | O_NDELAY, 1000, pid)));
--
--    ASSERT_GT(0, android_errorWriteWithInfoLog(
--            TAG, SUBTAG, UID, NULL, DATA_LEN));
--
--    sleep(2);
--
--    int count = 0;
--
--    for (;;) {
--        log_msg log_msg;
--        if (android_logger_list_read(logger_list, &log_msg) <= 0) {
--            break;
--        }
--
--        char *eventData = log_msg.msg();
--
--        // Tag
--        int tag = get4LE(eventData);
--        eventData += 4;
--
--        if (tag == TAG) {
--            // This tag should not have been written because the data was null
--            count++;
--            break;
--        }
--    }
--
--    EXPECT_EQ(0, count);
--
--    android_logger_list_close(logger_list);
--}
--
--TEST(liblog, android_errorWriteWithInfoLog__android_logger_list_read__subtag_too_long) {
--    const int TAG = 123456784;
--    const char SUBTAG[] = "abcdefghijklmnopqrstuvwxyz now i know my abc";
--    const int UID = -1;
--    const int DATA_LEN = 200;
--    struct logger_list *logger_list;
--
--    pid_t pid = getpid();
--
--    ASSERT_TRUE(NULL != (logger_list = android_logger_list_open(
--        LOG_ID_EVENTS,  O_RDONLY | O_NDELAY, 1000, pid)));
--
--    ASSERT_LT(0, android_errorWriteWithInfoLog(
--            TAG, SUBTAG, UID, max_payload_buf, DATA_LEN));
--
--    sleep(2);
--
--    int count = 0;
--
--    for (;;) {
--        log_msg log_msg;
--        if (android_logger_list_read(logger_list, &log_msg) <= 0) {
--            break;
--        }
--
--        char *eventData = log_msg.msg();
--
--        // Tag
--        int tag = get4LE(eventData);
--        eventData += 4;
--
--        if (tag != TAG) {
--            continue;
--        }
--
--        // List type
--        ASSERT_EQ(EVENT_TYPE_LIST, eventData[0]);
--        eventData++;
--
--        // Number of elements in list
--        ASSERT_EQ(3, eventData[0]);
--        eventData++;
--
--        // Element #1: string type for subtag
--        ASSERT_EQ(EVENT_TYPE_STRING, eventData[0]);
--        eventData++;
--
--        // The subtag is longer than 32 and should be truncated to that.
--        ASSERT_EQ(32, get4LE(eventData));
--        eventData +=4;
--
--        if (memcmp(SUBTAG, eventData, 32)) {
--            continue;
--        }
--        eventData += 32;
--
--        // Element #2: int type for uid
--        ASSERT_EQ(EVENT_TYPE_INT, eventData[0]);
--        eventData++;
--
--        ASSERT_EQ(UID, get4LE(eventData));
--        eventData += 4;
--
--        // Element #3: string type for data
--        ASSERT_EQ(EVENT_TYPE_STRING, eventData[0]);
--        eventData++;
--
--        ASSERT_EQ(DATA_LEN, get4LE(eventData));
--        eventData += 4;
--
--        if (memcmp(max_payload_buf, eventData, DATA_LEN)) {
--            continue;
--        }
--
--        ++count;
--    }
--
--    EXPECT_EQ(1, count);
--
--    android_logger_list_close(logger_list);
--}
--
--TEST(liblog, android_errorWriteLog__android_logger_list_read__success) {
--    const int TAG = 123456785;
--    const char SUBTAG[] = "test-subtag";
--    struct logger_list *logger_list;
--
--    pid_t pid = getpid();
--
--    ASSERT_TRUE(NULL != (logger_list = android_logger_list_open(
--        LOG_ID_EVENTS,  O_RDONLY | O_NDELAY, 1000, pid)));
--
--    ASSERT_LT(0, android_errorWriteLog(TAG, SUBTAG));
--
--    sleep(2);
--
--    int count = 0;
--
--    for (;;) {
--        log_msg log_msg;
--        if (android_logger_list_read(logger_list, &log_msg) <= 0) {
--            break;
--        }
--
--        char *eventData = log_msg.msg();
--
--        // Tag
--        int tag = get4LE(eventData);
--        eventData += 4;
--
--        if (tag != TAG) {
--            continue;
--        }
--
--        // List type
--        ASSERT_EQ(EVENT_TYPE_LIST, eventData[0]);
--        eventData++;
--
--        // Number of elements in list
--        ASSERT_EQ(3, eventData[0]);
--        eventData++;
--
--        // Element #1: string type for subtag
--        ASSERT_EQ(EVENT_TYPE_STRING, eventData[0]);
--        eventData++;
--
--        ASSERT_EQ((int) strlen(SUBTAG), get4LE(eventData));
--        eventData +=4;
--
--        if (memcmp(SUBTAG, eventData, strlen(SUBTAG))) {
--            continue;
--        }
--        ++count;
--    }
--
--    EXPECT_EQ(1, count);
--
--    android_logger_list_close(logger_list);
--}
--
--TEST(liblog, android_errorWriteLog__android_logger_list_read__null_subtag) {
--    const int TAG = 123456786;
--    struct logger_list *logger_list;
--
--    pid_t pid = getpid();
--
--    ASSERT_TRUE(NULL != (logger_list = android_logger_list_open(
--        LOG_ID_EVENTS,  O_RDONLY | O_NDELAY, 1000, pid)));
--
--    ASSERT_GT(0, android_errorWriteLog(TAG, NULL));
--
--    sleep(2);
--
--    int count = 0;
--
--    for (;;) {
--        log_msg log_msg;
--        if (android_logger_list_read(logger_list, &log_msg) <= 0) {
--            break;
--        }
--
--        char *eventData = log_msg.msg();
--
--        // Tag
--        int tag = get4LE(eventData);
--        eventData += 4;
--
--        if (tag == TAG) {
--            // This tag should not have been written because the data was null
--            count++;
--            break;
--        }
--    }
--
--    EXPECT_EQ(0, count);
--
--    android_logger_list_close(logger_list);
--}
-diff --git a/libziparchive/zip_archive.cc b/libziparchive/zip_archive.cc
-index ad0b053..87dac0e 100644
---- a/libziparchive/zip_archive.cc
-+++ b/libziparchive/zip_archive.cc
-@@ -1124,27 +1124,7 @@ int32_t ExtractEntryToFile(ZipArchiveHandle handle,
+diff -ur core/libziparchive/zip_archive.cc core_mtk/libziparchive/zip_archive.cc
+--- core/libziparchive/zip_archive.cc	2016-01-22 15:55:46.569330000 -0800
++++ core_mtk/libziparchive/zip_archive.cc	2016-01-23 05:28:26.459234000 -0800
+@@ -1124,27 +1124,7 @@
      return kIoError;
    }
  
@@ -868,11 +133,10 @@ index ad0b053..87dac0e 100644
    if (result == -1) {
      ALOGW("Zip: unable to truncate file to %" PRId64 ": %s",
            (int64_t)(declared_length + current_offset), strerror(errno));
-diff --git a/mkbootimg/bootimg.h b/mkbootimg/bootimg.h
-index 308c537..bf3b1dc 100644
---- a/mkbootimg/bootimg.h
-+++ b/mkbootimg/bootimg.h
-@@ -26,6 +26,8 @@ typedef struct boot_img_hdr boot_img_hdr;
+diff -ur core/mkbootimg/bootimg.h core_mtk/mkbootimg/bootimg.h
+--- core/mkbootimg/bootimg.h	2016-01-22 15:55:46.573330000 -0800
++++ core_mtk/mkbootimg/bootimg.h	2016-01-23 05:28:26.459234000 -0800
+@@ -26,6 +26,8 @@
  #define BOOT_ARGS_SIZE 512
  #define BOOT_EXTRA_ARGS_SIZE 1024
  
@@ -881,10 +145,9 @@ index 308c537..bf3b1dc 100644
  struct boot_img_hdr
  {
      unsigned char magic[BOOT_MAGIC_SIZE];
-diff --git a/mkbootimg/mkbootimg.c b/mkbootimg/mkbootimg.c
-index 38b4b37..80676a4 100644
---- a/mkbootimg/mkbootimg.c
-+++ b/mkbootimg/mkbootimg.c
+diff -ur core/mkbootimg/mkbootimg.c core_mtk/mkbootimg/mkbootimg.c
+--- core/mkbootimg/mkbootimg.c	2016-01-22 15:55:46.573330000 -0800
++++ core_mtk/mkbootimg/mkbootimg.c	2016-01-23 05:28:26.459234000 -0800
 @@ -25,10 +25,12 @@
  #include "mincrypt/sha.h"
  #include "bootimg.h"
@@ -899,7 +162,7 @@ index 38b4b37..80676a4 100644
      int fd;
  
      data = 0;
-@@ -40,13 +42,36 @@ static void *load_file(const char *fn, unsigned *_sz)
+@@ -40,13 +42,36 @@
  
      if(lseek(fd, 0, SEEK_SET) != 0) goto oops;
  
@@ -939,7 +202,7 @@ index 38b4b37..80676a4 100644
      return data;
  
  oops:
-@@ -68,6 +93,7 @@ int usage(void)
+@@ -68,6 +93,7 @@
              "       [ --dt <filename> ]\n"
              "       [ --ramdisk_offset <address> ]\n"
              "       [ --tags_offset <address> ]\n"
@@ -947,7 +210,7 @@ index 38b4b37..80676a4 100644
              "       -o|--output <filename>\n"
              );
      return 1;
-@@ -99,6 +125,8 @@ int main(int argc, char **argv)
+@@ -99,6 +125,8 @@
  {
      boot_img_hdr hdr;
  
@@ -956,7 +219,7 @@ index 38b4b37..80676a4 100644
      char *kernel_fn = 0;
      void *kernel_data = 0;
      char *ramdisk_fn = 0;
-@@ -167,6 +195,16 @@ int main(int argc, char **argv)
+@@ -167,6 +195,16 @@
              }
          } else if(!strcmp(arg, "--dt")) {
              dt_fn = val;
@@ -973,7 +236,7 @@ index 38b4b37..80676a4 100644
          } else {
              return usage();
          }
-@@ -216,7 +254,7 @@ int main(int argc, char **argv)
+@@ -216,7 +254,7 @@
          strncpy((char *)hdr.extra_cmdline, cmdline, BOOT_EXTRA_ARGS_SIZE);
      }
  
@@ -982,7 +245,7 @@ index 38b4b37..80676a4 100644
      if(kernel_data == 0) {
          fprintf(stderr,"error: could not load kernel '%s'\n", kernel_fn);
          return 1;
-@@ -226,7 +264,7 @@ int main(int argc, char **argv)
+@@ -226,7 +264,7 @@
          ramdisk_data = 0;
          hdr.ramdisk_size = 0;
      } else {
@@ -991,7 +254,7 @@ index 38b4b37..80676a4 100644
          if(ramdisk_data == 0) {
              fprintf(stderr,"error: could not load ramdisk '%s'\n", ramdisk_fn);
              return 1;
-@@ -234,7 +272,7 @@ int main(int argc, char **argv)
+@@ -234,7 +272,7 @@
      }
  
      if(second_fn) {
@@ -1000,7 +263,7 @@ index 38b4b37..80676a4 100644
          if(second_data == 0) {
              fprintf(stderr,"error: could not load secondstage '%s'\n", second_fn);
              return 1;
-@@ -242,7 +280,7 @@ int main(int argc, char **argv)
+@@ -242,7 +280,7 @@
      }
  
      if(dt_fn) {
@@ -1009,11 +272,10 @@ index 38b4b37..80676a4 100644
          if (dt_data == 0) {
              fprintf(stderr,"error: could not load device tree image '%s'\n", dt_fn);
              return 1;
-diff --git a/mkbootimg/unpackbootimg.c b/mkbootimg/unpackbootimg.c
-index 3d2fda7..d844cfd 100644
---- a/mkbootimg/unpackbootimg.c
-+++ b/mkbootimg/unpackbootimg.c
-@@ -38,11 +38,21 @@ void write_string_to_file(char* file, char* string)
+diff -ur core/mkbootimg/unpackbootimg.c core_mtk/mkbootimg/unpackbootimg.c
+--- core/mkbootimg/unpackbootimg.c	2016-01-22 15:55:46.573330000 -0800
++++ core_mtk/mkbootimg/unpackbootimg.c	2016-01-23 05:28:26.459234000 -0800
+@@ -38,11 +38,21 @@
      fclose(f);
  }
  
@@ -1035,7 +297,7 @@ index 3d2fda7..d844cfd 100644
      return 0;
  }
  
-@@ -52,6 +62,7 @@ int main(int argc, char** argv)
+@@ -52,6 +62,7 @@
      char* directory = "./";
      char* filename = NULL;
      int pagesize = 0;
@@ -1043,7 +305,7 @@ index 3d2fda7..d844cfd 100644
  
      argc--;
      argv++;
-@@ -66,6 +77,12 @@ int main(int argc, char** argv)
+@@ -66,6 +77,12 @@
              directory = val;
          } else if(!strcmp(arg, "--pagesize") || !strcmp(arg, "-p")) {
              pagesize = strtoul(val, 0, 16);
@@ -1056,7 +318,7 @@ index 3d2fda7..d844cfd 100644
          } else {
              return usage();
          }
-@@ -153,23 +170,27 @@ int main(int argc, char** argv)
+@@ -153,23 +170,27 @@
      //printf("total read: %d\n", total_read);
      total_read += read_padding(f, sizeof(header), pagesize);
  
@@ -1089,7 +351,7 @@ index 3d2fda7..d844cfd 100644
      total_read += header.ramdisk_size;
      sprintf(tmp, "%s/%s", directory, basename(filename));
      if(ramdisk[0] == 0x02 && ramdisk[1]== 0x21)
-@@ -177,7 +198,7 @@ int main(int argc, char** argv)
+@@ -177,7 +198,7 @@
      else
          strcat(tmp, "-ramdisk.gz");
      FILE *r = fopen(tmp, "wb");
@@ -1098,7 +360,7 @@ index 3d2fda7..d844cfd 100644
      fclose(r);
  
      total_read += read_padding(f, header.ramdisk_size, pagesize);
-@@ -185,11 +206,12 @@ int main(int argc, char** argv)
+@@ -185,11 +206,12 @@
      sprintf(tmp, "%s/%s", directory, basename(filename));
      strcat(tmp, "-second");
      FILE *s = fopen(tmp, "wb");
@@ -1114,7 +376,7 @@ index 3d2fda7..d844cfd 100644
      fclose(s);
  
      total_read += read_padding(f, header.second_size, pagesize);
-@@ -197,11 +219,12 @@ int main(int argc, char** argv)
+@@ -197,11 +219,12 @@
      sprintf(tmp, "%s/%s", directory, basename(filename));
      strcat(tmp, "-dt");
      FILE *d = fopen(tmp, "wb");
@@ -1130,10 +392,10 @@ index 3d2fda7..d844cfd 100644
      fclose(d);
      
      fclose(f);
-diff --git a/rootdir/init.trace.rc b/rootdir/init.trace.rc
-index cd8d350..bc20f23 100644
---- a/rootdir/init.trace.rc
-+++ b/rootdir/init.trace.rc
+Only in core_mtk: README.md
+diff -ur core/rootdir/init.trace.rc core_mtk/rootdir/init.trace.rc
+--- core/rootdir/init.trace.rc	2016-01-22 15:55:46.573330000 -0800
++++ core_mtk/rootdir/init.trace.rc	2016-01-23 05:28:26.459234000 -0800
 @@ -3,25 +3,30 @@
  on early-boot
  
@@ -1169,7 +431,7 @@ index cd8d350..bc20f23 100644
      chmod 0664 /sys/kernel/debug/tracing/events/sched/sched_switch/enable
      chmod 0664 /sys/kernel/debug/tracing/events/sched/sched_wakeup/enable
      chmod 0664 /sys/kernel/debug/tracing/events/power/cpu_frequency/enable
-@@ -29,7 +34,9 @@ on early-boot
+@@ -29,7 +34,9 @@
      chmod 0664 /sys/kernel/debug/tracing/events/power/clock_set_rate/enable
      chmod 0664 /sys/kernel/debug/tracing/events/cpufreq_interactive/enable
      chmod 0664 /sys/kernel/debug/tracing/tracing_on
@@ -1181,11 +443,10 @@ index cd8d350..bc20f23 100644
 -    chmod 0660 /sys/kernel/debug/tracing/trace
 +    chown system shell /sys/kernel/debug/tracing/trace
 +    chmod 0664 /sys/kernel/debug/tracing/trace
-diff --git a/rootdir/ueventd.rc b/rootdir/ueventd.rc
-index 4023ea6..67ba2ad 100644
---- a/rootdir/ueventd.rc
-+++ b/rootdir/ueventd.rc
-@@ -13,23 +13,96 @@ subsystem adf
+diff -ur core/rootdir/ueventd.rc core_mtk/rootdir/ueventd.rc
+--- core/rootdir/ueventd.rc	2016-01-22 15:55:46.573330000 -0800
++++ core_mtk/rootdir/ueventd.rc	2016-01-23 05:28:26.459234000 -0800
+@@ -13,23 +13,96 @@
  /dev/ashmem               0666   root       root
  /dev/binder               0666   root       root
  
@@ -1283,7 +544,7 @@ index 4023ea6..67ba2ad 100644
  /dev/diag_arm9            0660   radio      radio
  /dev/android_adb          0660   adb        adb
  /dev/android_adb_enable   0660   adb        adb
-@@ -39,7 +112,7 @@ subsystem adf
+@@ -39,7 +112,7 @@
  /dev/alarm                0664   system     radio
  /dev/rtc0                 0640   system     system
  /dev/tty0                 0660   root       system
@@ -1292,7 +553,7 @@ index 4023ea6..67ba2ad 100644
  /dev/msm_hw3dm            0660   system     graphics
  /dev/input/*              0660   root       input
  /dev/eac                  0660   root       audio
-@@ -85,6 +158,22 @@ subsystem adf
+@@ -85,6 +158,22 @@
  /dev/usb_accessory        0660   root       usb
  /dev/tun                  0660   system     vpn
  
@@ -1315,7 +576,7 @@ index 4023ea6..67ba2ad 100644
  # CDMA radio interface MUX
  /dev/ts0710mux*           0640   radio      radio
  /dev/ppp                  0660   radio      vpn
-@@ -98,39 +187,80 @@ subsystem adf
+@@ -98,39 +187,80 @@
  /sys/devices/system/cpu/cpu*   cpufreq/scaling_min_freq   0664  system system
  /sys/devices/system/cpu/cpu*   cpufreq/scaling_governor   0664  system system
  

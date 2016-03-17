@@ -31,5 +31,8 @@ cd ../..
 cd vendor/cm
 git apply -v ../../device/xiaomi/hermes/patches/vendor_cm/0001-enable-ota-nightly.patch
 cd ../..
+cd packages/apps/CMUpdater
+git apply -v ../../device/xiaomi/hermes/patches/packages_apps_CMUpdater/0001-enable-ota-updates.patch
+cd ../../..
 echo Patches Applied Successfully!
 

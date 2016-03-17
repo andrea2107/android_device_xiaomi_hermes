@@ -1,0 +1,24 @@
+From 9bf93279173702fa530c3f994918bfb0a534f2c0 Mon Sep 17 00:00:00 2001
+From: Lok Jian Ming <jianminglok@hotmail.com>
+Date: Thu, 17 Mar 2016 15:15:19 +0800
+Subject: [PATCH] Update common.mk
+
+---
+ config/common.mk | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/config/common.mk b/config/common.mk
+index b86ffee..ccd8fe7 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -276,8 +276,8 @@ ifdef CM_BUILDTYPE
+         endif
+     endif
+ else
+-    # If CM_BUILDTYPE is not defined, set to UNOFFICIAL
+-    CM_BUILDTYPE := UNOFFICIAL
++    # If CM_BUILDTYPE is not defined, set to NIGHTLY for OTA updates
++    CM_BUILDTYPE := NIGHTLY
+     CM_EXTRAVERSION :=
+ endif
+ 

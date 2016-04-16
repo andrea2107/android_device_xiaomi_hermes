@@ -28,8 +28,5 @@ cd ../..
 cd hardware/libhardware_legacy
 git apply -v ../../device/xiaomi/hermes/patches/hardware_libhardware_legacy/0001-patch-for-mtk.patch
 cd ../..
-cd packages/apps/CMUpdater
-git apply -v ../../../device/xiaomi/hermes/patches/packages_apps_CMUpdater/0001-enable-ota-updates.patch
-cd ../../..
 echo Patches Applied Successfully!
 

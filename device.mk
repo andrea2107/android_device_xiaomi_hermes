@@ -140,7 +140,7 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mt6795-common/configs/spn-conf.xml:system/etc/spn-conf.xml 
   
 PRODUCT_PACKAGES += \
-    gps.$(TARGET_BOARD_PLATFORM) \
+    gps.mt6595 \
     mtk_agpsd \
 
 # Thermal

@@ -100,6 +100,9 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/fstab.mt6795:root/fstab.mt6795 \
     $(LOCAL_PATH)/rootdir/init.aee.rc:root/init.aee.rc \
     $(LOCAL_PATH)/rootdir/init.modem.rc:root/init.modem.rc \
+    $(LOCAL_PATH)/root/init.epdg.rc:root/init.epdg.rc \
+    $(LOCAL_PATH)/root/init.mal.rc:root/init.mal.rc \
+    $(LOCAL_PATH)/root/init.wfca.rc:root/init.wfca.rc \
     $(LOCAL_PATH)/rootdir/init.mt6795.rc:root/init.mt6795.rc \
     $(LOCAL_PATH)/rootdir/init.mt6795.usb.rc:root/init.mt6795.usb.rc \
     $(LOCAL_PATH)/rootdir/init.project.rc:root/init.project.rc \

@@ -75,6 +75,11 @@ PRODUCT_COPY_FILES += \
 
 # Display
 PRODUCT_PACKAGES += \
+    libgralloc_extra \
+    libui_ext \
+    libion_mtk \
+    libgui_ext \
+    guiext-server \
     librrc
 
 #Light    

@@ -73,6 +73,10 @@ PRODUCT_COPY_FILES += \
      device/xiaomi/mt6795-common/configs/ACCDET.kl:system/usr/keylayout/ACCDET.kl\
      device/xiaomi/mt6795-common/configs/AVRCP.kl:system/usr/keylayout/AVRCP.kl      
 
+# Display
+PRODUCT_PACKAGES += \
+    librrc
+
 #Light    
 #PRODUCT_PACKAGES += \
      #lights.mt6795 

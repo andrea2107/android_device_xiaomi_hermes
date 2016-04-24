@@ -38,5 +38,7 @@ on post-fs
     mount rootfs rootfs / shared rec
     mount tmpfs tmpfs /mnt/secure private rec
     
+    symlink /dev/block/platform/mtk-msdc.0/11230000.MSDC0/by-name /dev/block/platform/mtk-msdc.0/by-name
+    
 on fs
     setprop ro.crypto.fuse_sdcard true

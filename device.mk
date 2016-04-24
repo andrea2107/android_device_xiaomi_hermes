@@ -40,6 +40,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 	immvibe
 
+# various MTK ABI fixes
+# this is the approach of the cm-13.0 sprout port
+PRODUCT_PACKAGES += \
+    libmtkabi
+
 # Hack to fix asec on emulated sdcard
 PRODUCT_PACKAGES += \
     asec_helper

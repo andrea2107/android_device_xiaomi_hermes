@@ -207,7 +207,8 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES := \
      ro.mount.fs=EXT4 \
      persist.service.acm.enable=0 \
      persist.sys.usb.config=mtp,mass_storage \
-     persist.sys.timezone=Asia/Shanghai
+     persist.sys.timezone=Asia/Shanghai \
+     ro.hardware=mt6795
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.kernel.android.checkjni=0 \

@@ -197,6 +197,10 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 # Charger
 PRODUCT_PACKAGES += \
       charger_res_images
+      
+# Digital Restrictions Management
+PRODUCT_PACKAGES += \
+    libdrmmtkutil
 
 # Wifi
  PRODUCT_PACKAGES += \

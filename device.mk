@@ -200,6 +200,7 @@ PRODUCT_PACKAGES += \
       
 # Digital Restrictions Management
 PRODUCT_PACKAGES += \
+    libmtk_drvb \
     libdrmmtkutil
 
 # Wifi

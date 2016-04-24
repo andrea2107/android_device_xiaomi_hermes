@@ -108,6 +108,22 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/init.hermes.power.rc:root/init.hermes.power.rc \
     $(LOCAL_PATH)/rootdir/init.storage.rc:root/init.storage.rc \
     $(LOCAL_PATH)/rootdir/init.cm.rc:root/init.cm.rc \
+    
+# RIL
+PRODUCT_PACKAGES += \
+    gsm0710muxd \
+    gsm0710muxdmd2 \
+    mtkrild \
+    mtkrildmd2 \
+    libmal \
+    libmal_datamngr \
+    libmal_epdga \
+    libmal_imsmngr \
+    libmal_mdmngr \
+    libmal_nwmngr \
+    libmal_rds \
+    libmal_rilproxy \
+    libmal_simmngr \
 
 # Telecom
 PRODUCT_COPY_FILES += \

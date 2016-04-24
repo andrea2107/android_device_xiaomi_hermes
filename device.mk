@@ -135,6 +135,9 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mt6795-common/configs/apns-conf.xml:system/etc/apns-conf.xml \
     device/xiaomi/mt6795-common/configs/ecc_list.xml:system/etc/ecc_list.xml \
     device/xiaomi/mt6795-common/configs/spn-conf.xml:system/etc/spn-conf.xml 
+  
+PRODUCT_PACKAGES += \
+    mtk_agpsd \
 
 # Thermal
 PRODUCT_COPY_FILES += \

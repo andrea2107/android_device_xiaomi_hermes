@@ -123,6 +123,12 @@ PRODUCT_PACKAGES += \
     gsm0710muxdmd2 \
     mtkrild \
     mtkrildmd2 \
+    mtk-ril \
+    mtk-rilmd2 \
+    volte_stack \
+    volte_imcb \
+    volte_ua \
+    volte_imsm \
     libmal \
     libmal_datamngr \
     libmal_epdga \
@@ -132,6 +138,10 @@ PRODUCT_PACKAGES += \
     libmal_rds \
     libmal_rilproxy \
     libmal_simmngr \
+    epdg_wod \
+    mtkmal \
+    charon starter stroke ipsec \
+    libcharon libhydra libstrongswan libsimaka \
 
 # Telecom
 PRODUCT_COPY_FILES += \

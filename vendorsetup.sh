@@ -1,5 +1,5 @@
 #
-# Copyright 2015 The Android Open Source Project
+# Copyright 2013 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,10 @@
 # limitations under the License.
 #
 
-# This file is executed by build/envsetup.sh, and can use anything
-# defined in envsetup.sh.
-#
-# In particular, you can add lunch options with the add_lunch_combo
-# function: add_lunch_combo generic-eng
-
-for var in eng user userdebug; do
-  add_lunch_combo cm_hermes-$var
+for flavor in eng userdebug user; do
+    add_lunch_combo "full_hermes-${flavor}"
+    add_lunch_combo "cm_hermes-${flavor}"
 done
+
+
+# vim:set ai et ts=4 sw=4 sts=4 fenc=utf-8:

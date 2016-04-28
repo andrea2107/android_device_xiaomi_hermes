@@ -4,6 +4,9 @@ import init.project.rc
 import init.xlog.rc
 import init.ssd.rc
 import init.modem.rc
+import init.mal.rc
+import init.wfca.rc
+import init.epdg.rc
 import init.hermes.power.rc
 
 

@@ -10,7 +10,6 @@ DEVICE_PACKAGE_OVERLAYS += device/xiaomi/hermes/overlay
 
 LOCAL_PATH := device/xiaomi/hermes
 
-LOCAL_PATH := device/xiaomi/hermes
 ifeq ($(TARGET_PREBUILT_KERNEL),)
 	LOCAL_KERNEL := $(LOCAL_PATH)/prebuilt/kernel
 else

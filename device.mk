@@ -132,12 +132,6 @@ PRODUCT_PACKAGES += \
     charon starter stroke ipsec \
     libcharon libhydra libstrongswan libsimaka \
 
-# wifi offload service common library
-#PRODUCT_PACKAGES += wfo-common  # this is pulled in by ImsService
-#ifeq ($(strip $(MTK_EPDG_SUPPORT)),yes)
-PRODUCT_PACKAGES += WfoService libwfo_jni
-#endif
-
 # IMS and VoLTE feature
 #ifeq ($(strip $(MTK_IMS_SUPPORT)),yes)
     PRODUCT_PACKAGES += ImsService

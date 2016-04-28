@@ -7,9 +7,6 @@ $(call inherit-product, device/common/gps/gps_us_supl.mk)
 $(call inherit-product-if-exists, vendor/xiaomi/hermes/hermes-vendor-blobs.mk)
 
 DEVICE_PACKAGE_OVERLAYS += device/xiaomi/hermes/overlay
-=======
-
-DEVICE_PACKAGE_OVERLAYS += device/xiaomi/hermes/overlay
 
 LOCAL_PATH := device/xiaomi/hermes
 
@@ -66,7 +63,6 @@ PRODUCT_PACKAGES += \
     audio_policy.default \
     libtinycompress \
     libtinyxml \
-=======
 PRODUCT_COPY_FILES += \
     device/xiaomi/hermes/configs/media_codecs.xml:system/etc/media_codecs.xml \
     device/xiaomi/hermes/configs/media_profiles.xml:system/etc/media_profiles.xml \
@@ -78,97 +74,6 @@ PRODUCT_COPY_FILES += \
 #    libtfa9890_interface \
 
 PRODUCT_COPY_FILES += \
-<<<<<<< HEAD
-    device/xiaomi/hermes/configs/media_codecs.xml:system/etc/media_codecs.xml \
-    device/xiaomi/hermes/configs/media_profiles.xml:system/etc/media_profiles.xml \
-    device/xiaomi/hermes/configs/audio_device.xml:system/etc/audio_device.xml \
-    device/xiaomi/hermes/configs/audio_policy.conf:system/etc/audio_policy.conf
-
-# Digital Restrictions Management
-PRODUCT_PACKAGES += \
-    libmtk_drvb \
-    libdrmmtkutil \
-
-# Wifi
-PRODUCT_PACKAGES += \
-    libwpa_client \
-    hostapd \
-    dhcpcd.conf \
-    wpa_supplicant \
-    wpa_supplicant.conf
-PRODUCT_COPY_FILES += \
-    device/xiaomi/hermes/configs/hostapd/hostapd_default.conf:system/etc/hostapd/hostapd_default.conf \
-    device/xiaomi/hermes/configs/hostapd/hostapd.accept:system/etc/hostapd/hostapd.accept \
-    device/xiaomi/hermes/configs/hostapd/hostapd.deny:system/etc/hostapd/hostapd.deny
-
-# Bluetooth
-PRODUCT_PACKAGES += \
-    libbt-vendor \
-    audio.a2dp.default
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/bt_did.conf:system/etc/bluetooth/bt_did.conf
-
-# RIL
-PRODUCT_PACKAGES += \
-    gsm0710muxd \
-    gsm0710muxdmd2 \
-    mtkrild \
-    mtkrildmd2 \
-    mtk-ril \
-    mtk-rilmd2 \
-    volte_stack \
-    volte_imcb \
-    volte_ua \
-    volte_imsm \
-    libmal \
-    libmal_datamngr \
-    libmal_epdga \
-    libmal_imsmngr \
-    libmal_mdmngr \
-    libmal_nwmngr \
-    libmal_rds \
-    libmal_rilproxy \
-    libmal_simmngr \
-    epdg_wod \
-    mtkmal \
-    charon starter stroke ipsec \
-    libcharon libhydra libstrongswan libsimaka \
-
-# wifi offload service common library
-#PRODUCT_PACKAGES += wfo-common  # this is pulled in by ImsService
-#ifeq ($(strip $(MTK_EPDG_SUPPORT)),yes)
-PRODUCT_PACKAGES += WfoService libwfo_jni
-#endif
-
-# IMS and VoLTE feature
-#ifeq ($(strip $(MTK_IMS_SUPPORT)),yes)
-    PRODUCT_PACKAGES += ImsService
-#endif
-
-# IKEv2
-#ifeq ($(strip $(MTK_EPDG_SUPPORT)),yes)
-PRODUCT_COPY_FILES += $(LOCAL_PATH)/mtk/strongswan/epdg_conf/ipsec.conf:system/etc/ipsec/ipsec.conf
-PRODUCT_COPY_FILES += $(LOCAL_PATH)/mtk/strongswan/epdg_conf/strongswan.conf:system/etc/ipsec/strongswan.conf
-PRODUCT_COPY_FILES += $(LOCAL_PATH)/mtk/strongswan/epdg_conf/updown_script:system/etc/ipsec/updown_script
-PRODUCT_COPY_FILES += $(LOCAL_PATH)/mtk/strongswan/epdg_conf/openssl.cnf:system/etc/ipsec/ssl/openssl.cnf
-
-#ifeq ($(strip $(MTK_CIP_SUPPORT)),no)
-#PRODUCT_COPY_FILES += $(LOCAL_PATH)/mtk/strongswan/epdg_conf/Entrust.net_Certification_Authority_2048.cer:system/etc/ipsec/ipsec.d/cacerts/CA1.cer
-#PRODUCT_COPY_FILES += $(LOCAL_PATH)/mtk/strongswan/epdg_conf/test2_ca.crt:system/etc/ipsec/ipsec.d/cacerts/CA1L1.crt
-#endif
-#endif
-
-# Telecom
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/apns-conf.xml:system/etc/apns-conf.xml \
-    $(LOCAL_PATH)/configs/ecc_list.xml:system/etc/ecc_list.xml \
-    $(LOCAL_PATH)/configs/spn-conf.xml:system/etc/spn-conf.xml \
-
-# GPS
-PRODUCT_COPY_FILES += \
-     $(LOCAL_PATH)/configs/agps_profiles_conf2.xml:system/etc/agps_profiles_conf2.xml
-
-=======
     $(LOCAL_PATH)/configs/media_codecs.xml:system/etc/media_codecs.xml \
     $(LOCAL_PATH)/configs/media_profiles.xml:system/etc/media_profiles.xml \
     $(LOCAL_PATH)/configs/audio_policy.conf:system/etc/audio_policy.conf
@@ -308,8 +213,6 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/rootdir/init.storage.rc:root/init.storage.rc \
     $(LOCAL_PATH)/rootdir/init.cm.rc:root/init.cm.rc \
 
-# Permissions
-=======
 # These are the hardware-specific features
 PRODUCT_COPY_FILES += \
     device/xiaomi/hermes/configs/android.hardware.consumerir.xml:system/etc/permissions/android.hardware.consumerir.xml \
@@ -349,7 +252,6 @@ PRODUCT_COPY_FILES += \
     frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml \
     frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml
 
-=======
 PRODUCT_COPY_FILES += \
 	device/xiaomi/hermes/configs/media_codecs.xml:system/etc/media_codecs.xml \
 	device/xiaomi/hermes/configs/media_codecs.xml:system/etc/permissions/media_codecs.xml \
@@ -357,12 +259,10 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_TAGS += dalvik.gc.type-precise
 
-# USB
-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
-    persist.sys.usb.config=mtp \
-    ro.hardware=mt6795 \
+# Charger
+PRODUCT_PACKAGES += \
+      charger_res_images
 
-=======
 # USB
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp \

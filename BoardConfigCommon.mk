@@ -1,6 +1,8 @@
 # inherit from the proprietary version
 -include vendor/xiaomi/hermes/BoardConfigVendor.mk
 
+LOCAL_PATH := device/xiaomi/hermes
+
 DEVICE_FOLDER_COMMON := device/xiaomi/hermes
 
 # Platform

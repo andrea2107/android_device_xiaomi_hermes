@@ -7,7 +7,7 @@
 ### Credits (Sort by alphabetical order):
   - lbule
   - nofearnohappy
-  - supersonicninja for updating the patches
+  - supersonicninja for updating the patches and fixing the SD card
   - Syl191 for the patches
   - The CyanogenMod Team
   - xen0n

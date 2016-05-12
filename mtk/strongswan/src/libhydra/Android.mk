@@ -8,10 +8,10 @@ attributes/attributes.c attributes/attributes.h \
 attributes/attribute_provider.h attributes/attribute_handler.h \
 attributes/attribute_manager.c attributes/attribute_manager.h \
 attributes/mem_pool.c attributes/mem_pool.h \
-kernel_wrap/kernel_interface.c kernel_wrap/kernel_interface.h \
-kernel_wrap/kernel_ipsec.c kernel_wrap/kernel_ipsec.h \
-kernel_wrap/kernel_net.c kernel_wrap/kernel_net.h \
-kernel_wrap/kernel_listener.h
+kernel/kernel_interface.c kernelp/kernel_interface.h \
+kernel/kernel_ipsec.c kernel/kernel_ipsec.h \
+kernel/kernel_net.c kernel/kernel_net.h \
+kernel/kernel_listener.h
 
 LOCAL_SRC_FILES := $(filter %.c,$(libhydra_la_SOURCES))
 

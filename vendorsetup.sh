@@ -23,3 +23,5 @@
 for var in eng user userdebug; do
   add_lunch_combo cm_hermes-$var
 done
+
+sh device/xiaomi/mt6795-common/patches/apply.sh

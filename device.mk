@@ -30,10 +30,6 @@ PRODUCT_AAPT_PREF_CONFIG := xxhdpi
 # Recovery allowed devices
 TARGET_OTA_ASSERT_DEVICE := hermes
 
-#App YGPS
-PRODUCT_PACKAGES += \
-    YGPS \
-
 # Power
 PRODUCT_PACKAGES += \
     power.mt6795 \

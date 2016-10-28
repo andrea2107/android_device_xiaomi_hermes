@@ -1,55 +1,13 @@
-commit 04d7383cd7080fd8bc515e9355891e6447587854
-Author: Deepflex <hqdevnews@gmail.com>
-Date:   Thu Aug 25 03:22:58 2016 +0700
+From 79c9b8c75dfeaa9c2c1b2051958d8f4d7b6fec13 Mon Sep 17 00:00:00 2001
+From: Lok Jian Ming <jianminglok@hotmail.com>
+Date: Fri, 28 Oct 2016 09:52:10 +0800
+Subject: [PATCH] Update for Mediatek
 
-    netd update
-    
-    Change-Id: If8029cce7b9fb5a47db7effb09d0731ea2407aee
+---
+ server/RouteController.cpp  | 11 --------
+ server/SoftapController.cpp | 63 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 63 insertions(+), 11 deletions(-)
 
-diff --git a/server/BandwidthController.cpp b/server/BandwidthController.cpp
-index 4f9e33e..85b1f5b 100644
---- a/server/BandwidthController.cpp
-+++ b/server/BandwidthController.cpp
-@@ -692,13 +692,6 @@ int BandwidthController::prepCostlyIface(const char *ifn, QuotaType quotaType) {
- 
-     snprintf(cmd, sizeof(cmd), "-I bw_OUTPUT %d -o %s --jump %s", ruleInsertPos, ifn, costCString);
-     res |= runIpxtablesCmd(cmd, IptJumpNoAdd);
--
--    snprintf(cmd, sizeof(cmd), "-D bw_FORWARD -i %s --jump %s", ifn, costCString);
--    runIpxtablesCmd(cmd, IptJumpNoAdd, IptFailHide);
--
--    snprintf(cmd, sizeof(cmd), "-I bw_FORWARD %d -i %s --jump %s", ruleInsertPos, ifn, costCString);
--    res |= runIpxtablesCmd(cmd, IptJumpNoAdd);
--
-     return res;
- }
- 
-diff --git a/server/NetlinkHandler.cpp b/server/NetlinkHandler.cpp
-index 8038b61..97dc3e0 100644
---- a/server/NetlinkHandler.cpp
-+++ b/server/NetlinkHandler.cpp
-@@ -104,7 +104,7 @@ void NetlinkHandler::onEvent(NetlinkEvent *evt) {
-             }
-         }
- 
--    } else if (!strcmp(subsys, "qlog") || !strcmp(subsys, "xt_quota2")) {
-+    } else if (!strcmp(subsys, "qlog")) {
-         const char *alertName = evt->findParam("ALERT_NAME");
-         const char *iface = evt->findParam("INTERFACE");
-         notifyQuotaLimitReached(alertName, iface);
-diff --git a/server/NetlinkManager.cpp b/server/NetlinkManager.cpp
-index 769a80a..76af46f 100644
---- a/server/NetlinkManager.cpp
-+++ b/server/NetlinkManager.cpp
-@@ -142,7 +142,7 @@ int NetlinkManager::start() {
- 
-     if ((mQuotaHandler = setupSocket(&mQuotaSock, NETLINK_NFLOG,
-             NFLOG_QUOTA_GROUP, NetlinkListener::NETLINK_FORMAT_BINARY, false)) == NULL) {
--        ALOGW("Unable to open qlog quota socket, check if xt_quota2 can send via UeventHandler");
-+        ALOGE("Unable to open quota socket");
-         // TODO: return -1 once the emulator gets a new kernel.
-     }
- 
 diff --git a/server/RouteController.cpp b/server/RouteController.cpp
 index 889779d..1bf9165 100644
 --- a/server/RouteController.cpp
@@ -80,18 +38,18 @@ index 889779d..1bf9165 100644
                          fwmark.intValue, mask.intValue, IIF_NONE, interface, uidStart, uidEnd);
  }
 diff --git a/server/SoftapController.cpp b/server/SoftapController.cpp
-index b05118e..08e4942 100755
+index 62ad450..0198129 100644
 --- a/server/SoftapController.cpp
 +++ b/server/SoftapController.cpp
-@@ -42,6 +42,7 @@
+@@ -41,6 +41,7 @@
+ #include <private/android_filesystem_config.h>
  #include "wifi.h"
- #include "wifi_fst.h"
  #include "ResponseCode.h"
 +#include "cutils/properties.h"
  
  #include "SoftapController.h"
  
-@@ -240,6 +241,8 @@ bool SoftapController::isSoftapStarted() {
+@@ -111,6 +112,8 @@ bool SoftapController::isSoftapStarted() {
      return (mPid != 0);
  }
  
@@ -100,7 +58,7 @@ index b05118e..08e4942 100755
  /*
   * Arguments:
   *  argv[2] - wlan interface
-@@ -253,6 +256,12 @@ int SoftapController::setSoftap(int argc, char *argv[]) {
+@@ -124,6 +127,12 @@ int SoftapController::setSoftap(int argc, char *argv[]) {
      int hidden = 0;
      int channel = AP_CHANNEL_DEFAULT;
  
@@ -113,7 +71,7 @@ index b05118e..08e4942 100755
      if (argc < 5) {
          ALOGE("Softap set is missing arguments. Please use:");
          ALOGE("softap <wlan iface> <SSID> <hidden/broadcast> <channel> <wpa2?-psk|open> <passphrase>");
-@@ -263,11 +272,31 @@ int SoftapController::setSoftap(int argc, char *argv[]) {
+@@ -134,11 +143,33 @@ int SoftapController::setSoftap(int argc, char *argv[]) {
          hidden = 1;
  
      if (argc >= 5) {
@@ -121,6 +79,7 @@ index b05118e..08e4942 100755
          channel = atoi(argv[5]);
          if (channel <= 0)
              channel = AP_CHANNEL_DEFAULT;
++
 +    #else
 +        if (property_get(AP_CHANNEL_PROP_NAME, ap_channel, NULL)){
 +            channel = atoi(ap_channel);
@@ -139,16 +98,17 @@ index b05118e..08e4942 100755
 +            mode = 'a';
 +        }
 +    #endif
++
      }
  
 +#ifndef USE_MTK_WLAN
      std::string wbuf(StringPrintf("interface=%s\n"
              "driver=nl80211\n"
              "ctrl_interface=/data/misc/wifi/hostapd\n"
-@@ -278,6 +307,37 @@ int SoftapController::setSoftap(int argc, char *argv[]) {
-             "ignore_broadcast_ssid=%d\n"
+@@ -150,6 +181,38 @@ int SoftapController::setSoftap(int argc, char *argv[]) {
              "wowlan_triggers=any\n",
              argv[2], argv[3], channel, (channel <= 14) ? 'g' : 'a', hidden));
+ 
 +#else
 +/*
 + * Arguments:
@@ -180,33 +140,7 @@ index b05118e..08e4942 100755
 +            "ap0", argv[3], channel, mode, hidden);
 +    }
 +#endif
- 
++
      std::string fbuf;
      if (argc > 7) {
-diff --git a/server/TetherController.cpp b/server/TetherController.cpp
-index 0f7f18b..88baa31 100644
---- a/server/TetherController.cpp
-+++ b/server/TetherController.cpp
-@@ -106,20 +106,13 @@ bool TetherController::enableForwarding(const char* requester) {
-     // Don't return an error if this requester already requested forwarding. Only return errors for
-     // things that the caller caller needs to care about, such as "couldn't write to the file to
-     // enable forwarding".
--    bool trigger = mForwardingRequests.empty();
-     mForwardingRequests.insert(requester);
--    if (trigger) {
--        return setIpFwdEnabled();
--    }
--    return true;
-+    return setIpFwdEnabled();
- }
- 
- bool TetherController::disableForwarding(const char* requester) {
-     mForwardingRequests.erase(requester);
--    if (mForwardingRequests.empty()) {
--        return setIpFwdEnabled();
--    }
--    return true;
-+    return setIpFwdEnabled();
- }
- 
- size_t TetherController::forwardingRequestCount() {
+         char psk_str[2*SHA256_DIGEST_LENGTH+1];

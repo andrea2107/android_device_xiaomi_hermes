@@ -1,7 +1,7 @@
-From 3d12dd9586d9411e2d6dfdfaeb306dc0488ce885 Mon Sep 17 00:00:00 2001
-From: nofearnohappy <fetpoh@mail.ru>
-Date: Mon, 3 Oct 2016 07:18:02 +0300
-Subject: [PATCH] patch_camera
+From 42b5f62fefea90da1ef012c50ebc8f0b88cdd07b Mon Sep 17 00:00:00 2001
+From: Lok Jian Ming <jianminglok@hotmail.com>
+Date: Thu, 27 Oct 2016 11:52:57 +0800
+Subject: [PATCH] Update for Mediatek
 
 ---
  camera/Android.mk                                  |   6 +
@@ -10,38 +10,38 @@ Subject: [PATCH] patch_camera
  include/camera/MtkCamera.h                         | 270 ++++++++++++
  include/camera/MtkCameraParameters.h               | 476 +++++++++++++++++++++
  services/camera/libcameraservice/Android.mk        |   4 +
- services/camera/libcameraservice/CameraService.h   |   6 +
- .../camera/libcameraservice/api1/CameraClient.cpp  |  20 +
- .../camera/libcameraservice/api1/CameraClient.h    |  18 +
+ services/camera/libcameraservice/CameraService.h   |   7 +
+ .../camera/libcameraservice/api1/CameraClient.cpp  |  15 +
+ .../camera/libcameraservice/api1/CameraClient.h    |  19 +
  .../libcameraservice/mediatek/CameraService.cpp    |  46 ++
  .../mediatek/api1/CameraClient.cpp                 | 379 ++++++++++++++++
- 12 files changed, 1889 insertions(+)
- create mode 100755 camera/MtkCamera.cpp
- create mode 100755 camera/MtkCameraParameters.cpp
- create mode 100755 include/camera/MtkCamera.h
- create mode 100755 include/camera/MtkCameraParameters.h
+ 11 files changed, 1828 insertions(+)
+ create mode 100644 camera/MtkCamera.cpp
+ create mode 100644 camera/MtkCameraParameters.cpp
+ create mode 100644 include/camera/MtkCamera.h
+ create mode 100644 include/camera/MtkCameraParameters.h
  create mode 100644 services/camera/libcameraservice/mediatek/CameraService.cpp
  create mode 100644 services/camera/libcameraservice/mediatek/api1/CameraClient.cpp
 
 diff --git a/camera/Android.mk b/camera/Android.mk
-index 36f6da1..65ca26c 100644
+index 471cb0d..633f985 100644
 --- a/camera/Android.mk
 +++ b/camera/Android.mk
 @@ -38,6 +38,12 @@ LOCAL_SRC_FILES:= \
+ 	CameraBase.cpp \
  	CameraUtils.cpp \
  	VendorTagDescriptor.cpp
- 
++	
 +ifeq ($(BOARD_HAS_MTK_HARDWARE),true)
 +	LOCAL_SRC_FILES+= \
 +		MtkCameraParameters.cpp \
 +                MtkCamera.cpp
-+endif
-+
++endif	
+ 
  LOCAL_SHARED_LIBRARIES := \
  	libcutils \
- 	libutils \
 diff --git a/camera/MtkCamera.cpp b/camera/MtkCamera.cpp
-new file mode 100755
+new file mode 100644
 index 0000000..e9a6be5
 --- /dev/null
 +++ b/camera/MtkCamera.cpp
@@ -205,7 +205,7 @@ index 0000000..e9a6be5
 +
 +}; // namespace android
 diff --git a/camera/MtkCameraParameters.cpp b/camera/MtkCameraParameters.cpp
-new file mode 100755
+new file mode 100644
 index 0000000..e4ab384
 --- /dev/null
 +++ b/camera/MtkCameraParameters.cpp
@@ -659,7 +659,7 @@ index 0000000..e4ab384
 +
 +}; // namespace android
 diff --git a/include/camera/MtkCamera.h b/include/camera/MtkCamera.h
-new file mode 100755
+new file mode 100644
 index 0000000..5c9c71d
 --- /dev/null
 +++ b/include/camera/MtkCamera.h
@@ -935,7 +935,7 @@ index 0000000..5c9c71d
 +
 +#endif  //_MTK_FRAMEWORKS_AV_INCLUDE_CAMERA_MTKCAMERA_H_
 diff --git a/include/camera/MtkCameraParameters.h b/include/camera/MtkCameraParameters.h
-new file mode 100755
+new file mode 100644
 index 0000000..81de530
 --- /dev/null
 +++ b/include/camera/MtkCameraParameters.h
@@ -1417,7 +1417,7 @@ index 0000000..81de530
 +
 +#endif
 diff --git a/services/camera/libcameraservice/Android.mk b/services/camera/libcameraservice/Android.mk
-index ab09cb3..0d4642b 100644
+index afb78dc..69673b3 100644
 --- a/services/camera/libcameraservice/Android.mk
 +++ b/services/camera/libcameraservice/Android.mk
 @@ -76,6 +76,10 @@ LOCAL_C_INCLUDES += \
@@ -1432,24 +1432,25 @@ index ab09cb3..0d4642b 100644
  LOCAL_CFLAGS += -Wall -Wextra
  
 diff --git a/services/camera/libcameraservice/CameraService.h b/services/camera/libcameraservice/CameraService.h
-index 53233bd..83c8195 100644
+index d2c1bd3..af29dc9 100644
 --- a/services/camera/libcameraservice/CameraService.h
 +++ b/services/camera/libcameraservice/CameraService.h
-@@ -97,6 +97,12 @@ class CameraService :
+@@ -92,6 +92,13 @@ class CameraService :
+ 
      // Implementation of BinderService<T>
      static char const* getServiceName() { return "media.camera"; }
- 
++    
 +#ifdef MTK_HARDWARE //PATCH
 +#if 1   // defined(MTK_CAMERA_BSP_SUPPORT)
 +    virtual status_t    getProperty(String8 const& key, String8& value) const;
 +    virtual status_t    setProperty(String8 const& key, String8 const& value);
 +#endif
 +#endif
+ 
                          CameraService();
      virtual             ~CameraService();
- 
 diff --git a/services/camera/libcameraservice/api1/CameraClient.cpp b/services/camera/libcameraservice/api1/CameraClient.cpp
-index af46d63..753dc5f 100644
+index 6020e35..a250d59 100644
 --- a/services/camera/libcameraservice/api1/CameraClient.cpp
 +++ b/services/camera/libcameraservice/api1/CameraClient.cpp
 @@ -24,6 +24,12 @@
@@ -1465,18 +1466,18 @@ index af46d63..753dc5f 100644
  namespace android {
  
  #define LOG1(...) ALOGD_IF(gLogLevel >= 1, __VA_ARGS__);
-@@ -95,6 +101,10 @@ status_t CameraClient::initialize(CameraModule *module) {
+@@ -91,6 +97,10 @@ status_t CameraClient::initialize(CameraModule *module) {
+     // Enable zoom, error, focus, and metadata messages by default
      enableMsgType(CAMERA_MSG_ERROR | CAMERA_MSG_ZOOM | CAMERA_MSG_FOCUS |
                    CAMERA_MSG_PREVIEW_METADATA | CAMERA_MSG_FOCUS_MOVE);
- 
++    
 +    #ifdef MTK_HARDWARE //PATCH
 +    enableMsgType(MTK_CAMERA_MSG_EXT_NOTIFY | MTK_CAMERA_MSG_EXT_DATA); // Enable MTK-extended messages by default
 +    #endif
-+
+ 
      LOG1("CameraClient::initialize X (pid %d, id %d)", callingPid, mCameraId);
      return OK;
- }
-@@ -748,6 +758,11 @@ void CameraClient::notifyCallback(int32_t msgType, int32_t ext1,
+@@ -728,6 +738,11 @@ void CameraClient::notifyCallback(int32_t msgType, int32_t ext1,
      if (!client->lockIfMessageWanted(msgType)) return;
  
      switch (msgType) {
@@ -1488,27 +1489,16 @@ index af46d63..753dc5f 100644
          case CAMERA_MSG_SHUTTER:
              // ext1 is the dimension of the yuv picture.
              client->handleShutter();
-@@ -773,6 +788,11 @@ void CameraClient::dataCallback(int32_t msgType,
-     }
- 
-     switch (msgType & ~CAMERA_MSG_PREVIEW_METADATA) {
-+        #ifdef MTK_HARDWARE //PATCH
-+        case MTK_CAMERA_MSG_EXT_DATA:
-+            client->handleMtkExtData(dataPtr, metadata); // Callback extended msg notification.
-+            break;
-+        #endif
-         case CAMERA_MSG_PREVIEW_FRAME:
-             client->handlePreviewData(msgType, dataPtr, metadata);
-             break;
 diff --git a/services/camera/libcameraservice/api1/CameraClient.h b/services/camera/libcameraservice/api1/CameraClient.h
-index d2cb64a..20cea2d 100644
+index 17999a5..a6e3b4c 100644
 --- a/services/camera/libcameraservice/api1/CameraClient.h
 +++ b/services/camera/libcameraservice/api1/CameraClient.h
-@@ -167,6 +167,24 @@ class CameraClient : public CameraService::Client
- 
-     bool                 mLongshotEnabled;
-     int                  mBurstCnt;
-+#ifdef MTK_HARDWARE //PATCH
+@@ -164,6 +164,25 @@ class CameraClient : public CameraService::Client
+     // This function keeps trying to grab mLock, or give up if the message
+     // is found to be disabled. It returns true if mLock is grabbed.
+     bool                    lockIfMessageWanted(int32_t msgType);
++    
++    #ifdef MTK_HARDWARE //PATCH
 +        //
 +        void                handleMtkExtNotify(int32_t ext1, int32_t ext2);
 +        void                handleMtkExtData(const sp<IMemory>& dataPtr, camera_frame_metadata_t *metadata);

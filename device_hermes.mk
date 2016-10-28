@@ -5,7 +5,7 @@ $(call inherit-product, device/xiaomi/hermes/device.mk)
 PRODUCT_RELEASE_NAME := xiaomi hermes
 
 PRODUCT_DEVICE := hermes
-PRODUCT_NAME := full_hermes
+PRODUCT_NAME := omni_hermes
 PRODUCT_BRAND := xiaomi
 PRODUCT_MODEL := Redmi Note 2
 PRODUCT_MANUFACTURER := xiaomi

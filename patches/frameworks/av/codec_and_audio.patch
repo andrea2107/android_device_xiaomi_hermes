@@ -1,7 +1,7 @@
-From 97b97fa61e7456aabb04d96ed3d3c43b363736f9 Mon Sep 17 00:00:00 2001
-From: nofearnohappy <fetpoh@mail.ru>
-Date: Mon, 3 Oct 2016 06:52:55 +0300
-Subject: [PATCH] patch_1
+From c5ab07e13e18ba2c54d8ffba26a8caf4de483aa9 Mon Sep 17 00:00:00 2001
+From: Lok Jian Ming <jianminglok@hotmail.com>
+Date: Thu, 27 Oct 2016 12:05:59 +0800
+Subject: [PATCH] Update 2 for Mediatek
 
 ---
  media/libmedia/Android.mk                          |   8 +
@@ -15,10 +15,10 @@ Subject: [PATCH] patch_1
  create mode 100644 media/libmedia/mtkaudio_stubs.cpp
 
 diff --git a/media/libmedia/Android.mk b/media/libmedia/Android.mk
-index efcd541..d307afc 100644
+index 9f836f0..6fea88a 100644
 --- a/media/libmedia/Android.mk
 +++ b/media/libmedia/Android.mk
-@@ -101,5 +101,13 @@ LOCAL_C_INCLUDES := \
+@@ -91,5 +91,13 @@ LOCAL_C_INCLUDES := \
  LOCAL_CFLAGS += -Werror -Wno-error=deprecated-declarations -Wall
  LOCAL_CLANG := true
  
@@ -259,7 +259,7 @@ index 0000000..84616f7
 +} // namespace
 +
 diff --git a/media/libstagefright/include/OMXNodeInstance.h b/media/libstagefright/include/OMXNodeInstance.h
-index 4f1fa84..ba2c347 100644
+index babf5b7..bb9605e 100644
 --- a/media/libstagefright/include/OMXNodeInstance.h
 +++ b/media/libstagefright/include/OMXNodeInstance.h
 @@ -161,10 +161,13 @@ struct OMXNodeInstance {
@@ -277,26 +277,26 @@ index 4f1fa84..ba2c347 100644
  
      // For debug support
 diff --git a/media/libstagefright/include/SoftVideoDecoderOMXComponent.h b/media/libstagefright/include/SoftVideoDecoderOMXComponent.h
-index 4529007..37cc066 100644
+index 4529007..dfa4807 100644
 --- a/media/libstagefright/include/SoftVideoDecoderOMXComponent.h
 +++ b/media/libstagefright/include/SoftVideoDecoderOMXComponent.h
 @@ -64,6 +64,9 @@ struct SoftVideoDecoderOMXComponent : public SimpleSoftOMXComponent {
              const char *mimeType,
              OMX_U32 minCompressionRatio = 1u);
  
-+    // For MTK blob compatibility
++// For MTK blob compatibility
 +    virtual void updatePortDefinitions(bool updateCrop = true);
 +
      virtual void updatePortDefinitions(bool updateCrop = true, bool updateInputSize = false);
  
      uint32_t outputBufferWidth();
 diff --git a/media/libstagefright/omx/Android.mk b/media/libstagefright/omx/Android.mk
-index d16d5df..31a0c4f 100644
+index 5f0f567..d5de077 100644
 --- a/media/libstagefright/omx/Android.mk
 +++ b/media/libstagefright/omx/Android.mk
-@@ -36,6 +36,12 @@ ifeq ($(strip $(AUDIO_FEATURE_ENABLED_EXTN_FLAC_DECODER)),true)
- endif
- endif
+@@ -30,6 +30,12 @@ LOCAL_SHARED_LIBRARIES :=               \
+         libstagefright_foundation       \
+         libdl
  
 +ifeq ($(BOARD_HAS_MTK_HARDWARE),true)
 +ifeq ($(BOARD_USES_LEGACY_MTK_AV_BLOB),true)
@@ -308,15 +308,16 @@ index d16d5df..31a0c4f 100644
  LOCAL_CFLAGS += -Werror -Wall
  LOCAL_CLANG := true
 diff --git a/media/libstagefright/omx/OMXNodeInstance.cpp b/media/libstagefright/omx/OMXNodeInstance.cpp
-index f9c3cfb..fb17ad4 100644
+index 7f534b5..63b91a6 100644
 --- a/media/libstagefright/omx/OMXNodeInstance.cpp
 +++ b/media/libstagefright/omx/OMXNodeInstance.cpp
-@@ -200,8 +200,12 @@ OMXNodeInstance::OMXNodeInstance(
+@@ -197,9 +197,13 @@ OMXNodeInstance::OMXNodeInstance(
      : mOwner(owner),
        mNodeID(0),
        mHandle(NULL),
 +#ifndef USE_LEGACY_MTK_AV_BLOB
        mObserver(observer),
+       mDying(false),
        mBufferIDCount(0)
 +#else
 +      mObserver(observer)
@@ -324,7 +325,7 @@ index f9c3cfb..fb17ad4 100644
  {
      mName = ADebug::GetDebugName(name);
      DEBUG = ADebug::GetDebugLevelFromProperty(name, "debug.stagefright.omx-debug");
-@@ -1630,6 +1634,7 @@ void OMXNodeInstance::freeActiveBuffers() {
+@@ -1622,6 +1626,7 @@ void OMXNodeInstance::freeActiveBuffers() {
      }
  }
  
@@ -332,7 +333,7 @@ index f9c3cfb..fb17ad4 100644
  OMX::buffer_id OMXNodeInstance::makeBufferID(OMX_BUFFERHEADERTYPE *bufferHeader) {
      if (bufferHeader == NULL) {
          return 0;
-@@ -1695,5 +1700,23 @@ void OMXNodeInstance::invalidateBufferID(OMX::buffer_id buffer) {
+@@ -1687,5 +1692,23 @@ void OMXNodeInstance::invalidateBufferID(OMX::buffer_id buffer) {
      mBufferHeaderToBufferID.removeItem(mBufferIDToBufferHeader.valueAt(index));
      mBufferIDToBufferHeader.removeItemsAt(index);
  }
@@ -342,7 +343,7 @@ index f9c3cfb..fb17ad4 100644
 +    return (OMX::buffer_id)(size_t)bufferHeader;
 +}
 +
-+OMX_BUFFERHEADERTYPE *OMXNodeInstance::findBufferHeader(OMX::buffer_id buffer, OMX_U32 portIndex __unused) {
++OMX_BUFFERHEADERTYPE OMXNodeInstance::findBufferHeader(OMX::buffer_id buffer, OMX_U32 ortIndex __unused) {
 +    return (OMX_BUFFERHEADERTYPE *)(size_t)buffer;
 +}
 +

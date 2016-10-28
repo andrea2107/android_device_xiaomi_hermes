@@ -1,32 +1,35 @@
-commit 9bd287e96b4262eb4105344e7b22c57edcd915b0
-Author: Deepflex <hqdevnews@gmail.com>
-Date:   Sat Aug 13 18:36:07 2016 +0700
+From bca7d776313adadba7ef18aba14e10765b706bbc Mon Sep 17 00:00:00 2001
+From: Lok Jian Ming <jianminglok@hotmail.com>
+Date: Fri, 28 Oct 2016 09:43:02 +0800
+Subject: [PATCH] Update for Mediatek
 
-    core update
-    
-    Change-Id: I2d26afae8dc5c6fd759fc9e43bd2ccddda8d5a25
+---
+ healthd/BatteryMonitor.cpp | 6 +++++-
+ init/init.cpp              | 4 +++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/healthd/BatteryMonitor.cpp b/healthd/BatteryMonitor.cpp
-index 86a4fc6..584a466 100644
+index 04dbf74..d26506c 100644
 --- a/healthd/BatteryMonitor.cpp
 +++ b/healthd/BatteryMonitor.cpp
-@@ -207,7 +207,11 @@ bool BatteryMonitor::update(void) {
+@@ -196,7 +196,11 @@ bool BatteryMonitor::update(void) {
      props.batteryLevel = mBatteryFixedCapacity ?
          mBatteryFixedCapacity :
          getIntField(mHealthdConfig->batteryCapacityPath);
-+#ifndef MTK_HARDWARE
-     props.batteryVoltage = getIntField(mHealthdConfig->batteryVoltagePath) / 1000;
-+#else
-+    props.batteryVoltage = getIntField(mHealthdConfig->batteryVoltagePath);
-+#endif
+-    props.batteryVoltage = getIntField(mHealthdConfig->batteryVoltagePath) / 1000;
++    #ifndef MTK_HARDWARE
++        props.batteryVoltage = getIntField(mHealthdConfig->batteryVoltagePath) / 1000;
++    #else
++        props.batteryVoltage = getIntField(mHealthdConfig->batteryVoltagePath);
++    #endif
  
      props.batteryTemperature = mBatteryFixedTemperature ?
          mBatteryFixedTemperature :
 diff --git a/init/init.cpp b/init/init.cpp
-index 58d7d34..7fa4d75 100644
+index b332588..7d39c3c 100644
 --- a/init/init.cpp
 +++ b/init/init.cpp
-@@ -85,7 +85,9 @@ static int have_console;
+@@ -78,7 +78,9 @@ static int have_console;
  static char console_name[PROP_VALUE_MAX] = "/dev/console";
  static time_t process_needs_restart;
  

@@ -1,4 +1,4 @@
-$(call inherit-product, device/xiaomi/hermes/device_hermes.mk)
+$(call inherit-product, device/xiaomi/hermes/omni_hermes.mk)
 
 DEVICE_PACKAGE_OVERLAYS += device/xiaomi/hermes/overlay
 

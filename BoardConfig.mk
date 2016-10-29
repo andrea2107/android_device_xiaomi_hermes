@@ -1,3 +1,6 @@
+#TWRP
+TW_THEME := potrait_hdpi
+
 # mt6795 platform boardconfig
 -include vendor/xiaomi/hermes/BoardConfigVendor.mk
 

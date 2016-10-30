@@ -115,10 +115,6 @@ on post-fs-data
     chmod 0660 /dev/consumerir
     chown system system /dev/consumerir
 
-# ADD D2T FT5446
-    chown system system /sys/lenovo_tp_gestures/tpd_suspend_status
-    chown system system /sys/lenovo_tp_gestures/tpd_glove_status
-
 #
 # Connectivity related device nodes & configuration (end)
 #

@@ -22,7 +22,7 @@ PRODUCT_DEFAULT_REGION   := US
 
 ## Device identifier. This must come after all inclusions
 PRODUCT_DEVICE := hermes
-PRODUCT_NAME := aosp_hermes
+PRODUCT_NAME := omni_hermes
 PRODUCT_BRAND := XiaoMi
 PRODUCT_MODEL := Redmi Note 2
 PRODUCT_MANUFACTURER := XiaoMi

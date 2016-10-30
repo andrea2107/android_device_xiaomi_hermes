@@ -88,8 +88,8 @@ BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 TARGET_KERNEL_APPEND_DTB := true
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_HEADER_ARCH := arm64
-TARGET_KERNEL_SOURCE := kernel/xiaomi/msm8956
-TARGET_KERNEL_CONFIG := cyanogenmod_kenzo_defconfig
+TARGET_KERNEL_SOURCE := kernel/xiaomi/hermes
+TARGET_KERNEL_CONFIG := hermes_defconfig
 TARGET_KERNEL_CROSS_COMPILE_PREFIX := aarch64-linux-android-
 
 # build old-style zip files (required for ota updater)

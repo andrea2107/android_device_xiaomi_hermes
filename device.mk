@@ -1,11 +1,6 @@
-# 64-bit support
-$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 
 # Language
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
-
-# Inherit from the common Open Source product configuration
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
 # Dalvik/HWUI
 $(call inherit-product-if-exists, frameworks/native/build/phone-xxhdpi-2048-dalvik-heap.mk)
@@ -34,9 +29,9 @@ TARGET_OTA_ASSERT_DEVICE := hermes
 PRODUCT_PACKAGES += \
     power.mt6795 \
 
-# Camera
-#PRODUCT_PACKAGES += \
-#    Snap \
+#Camera
+PRODUCT_PACKAGES += \
+    Snap
 
 # Use CM Gello browser
 PRODUCT_PACKAGES += \
@@ -78,7 +73,9 @@ PRODUCT_PACKAGES += \
 
 # Bluetooth                            
 PRODUCT_PACKAGES += \
-    audio.a2dp.default 
+    audio.a2dp.default
+PRODUCT_PACKAGES += \
+    libbt-vendor
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/bt_did.conf:system/etc/bluetooth/bt_did.conf
 
@@ -114,6 +111,7 @@ PRODUCT_COPY_FILES += \
 # FM Radio
 PRODUCT_PACKAGES += \
      	FmRadio
+	libmtkplayer
 
 # ANT Permissions
 PRODUCT_COPY_FILES += \
